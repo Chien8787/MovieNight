@@ -10,6 +10,8 @@ interface RouletteModalProps {
 const RouletteModal: React.FC<RouletteModalProps> = ({ isOpen, winner, onClose }) => {
   if (!isOpen || !winner) return null;
 
+  const platforms = winner.platform.split(/,|、/).map(p => p.trim());
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -22,18 +24,32 @@ const RouletteModal: React.FC<RouletteModalProps> = ({ isOpen, winner, onClose }
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl"></div>
 
-        <div className="relative z-10 animate-bounce-slight">
+        <div className="relative z-10 animate-bounce-slight flex flex-col items-center">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-3xl font-black text-white mb-2">今晚就看這部！</h2>
-          <p className="text-indigo-300 mb-8">命運的輪盤已經做出了選擇</p>
+          <p className="text-indigo-300 mb-6">命運的輪盤已經做出了選擇</p>
           
-          <div className="bg-black/30 rounded-2xl p-6 border border-indigo-500/30 mb-8">
-            <div className="text-5xl mb-4">{winner.emoji}</div>
+          <div className="w-full bg-black/30 rounded-2xl p-6 border border-indigo-500/30 mb-8 flex flex-col items-center">
+            {/* Poster or Emoji */}
+            <div className="w-32 h-48 mb-4 rounded-lg shadow-2xl overflow-hidden border-2 border-white/10 bg-slate-900 flex items-center justify-center">
+               {winner.posterUrl ? (
+                 <img src={winner.posterUrl} alt={winner.title} className="w-full h-full object-cover" />
+               ) : (
+                 <span className="text-6xl">{winner.emoji}</span>
+               )}
+            </div>
+
             <h3 className="text-2xl font-bold text-white mb-2">{winner.title}</h3>
             <p className="text-sm text-slate-400 mb-4">{winner.year} • {winner.director}</p>
-            <div className="inline-block px-3 py-1 bg-indigo-600 rounded text-xs font-bold text-white mb-4">
-              可於 {winner.platform} 觀看
+            
+            <div className="flex flex-wrap gap-2 justify-center mb-4">
+              {platforms.map((plat, i) => (
+                <span key={i} className="px-3 py-1 bg-indigo-600 rounded text-xs font-bold text-white shadow-lg shadow-indigo-500/20">
+                  {plat}
+                </span>
+              ))}
             </div>
+
             <p className="text-slate-300 text-sm italic">"{winner.description}"</p>
           </div>
 

@@ -24,7 +24,11 @@ export const fetchMovieMetadata = async (
       director: { type: Type.STRING, description: "Director's name" },
       platform: { 
         type: Type.STRING, 
-        description: "Best guessing streaming platform in Taiwan (e.g., Netflix TW, Disney+, Catchplay, HBO GO, Prime Video). If unknown, say '未知'." 
+        description: "List available streaming platforms in TAIWAN (e.g., Netflix, Disney+, Catchplay+, friDay, HBO GO, Apple TV, Google Play). Separate with commas. Be accurate for the Taiwan region." 
+      },
+      posterUrl: { 
+        type: Type.STRING, 
+        description: "A direct URL to the movie poster image. Prioritize official posters or high-quality covers from standard sources (like Wikimedia Commons, TMDB source, or official studio sites). Returns empty string if no reliable URL is found." 
       },
       emoji: { type: Type.STRING, description: "A single emoji representing the movie theme." },
     },
@@ -34,11 +38,16 @@ export const fetchMovieMetadata = async (
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `Find details for the movie "${movieName}". Context: Taiwanese audience. Return JSON.`,
+      contents: `Find details for the movie "${movieName}". Target audience: Taiwan. 
+      1. Find the official Traditional Chinese title used in Taiwan.
+      2. Identify specifically which streaming platforms in Taiwan currently have this movie.
+      3. Find a valid URL for the movie poster.
+      Return JSON.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: schema,
-        systemInstruction: "You are a Taiwanese movie geek. You provide accurate metadata for movies including their availability on streaming platforms in Taiwan. Use Traditional Chinese (Taiwan standard).",
+        systemInstruction: "You are a Taiwanese movie expert. You provide accurate metadata for movies, especially their availability on streaming platforms in Taiwan (Netflix TW, Disney+, Catchplay+, friDay, Hami Video, etc). You always try to find a visual poster for the movie.",
+        tools: [{googleSearch: {}}], // Enable search to help find platforms and posters
       },
     });
 
@@ -54,6 +63,7 @@ export const fetchMovieMetadata = async (
       description: data.description,
       director: data.director,
       platform: data.platform,
+      posterUrl: data.posterUrl,
       emoji: data.emoji,
       addedBy: userNickname,
       votes: [],
@@ -67,7 +77,7 @@ export const fetchMovieMetadata = async (
       genre: "Unknown",
       description: "AI 暫時無法取得資訊，但這部片一定很讚！",
       director: "Unknown",
-      platform: "Unknown",
+      platform: "未知",
       emoji: "🎬",
       addedBy: userNickname,
       votes: [],

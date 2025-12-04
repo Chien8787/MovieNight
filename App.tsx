@@ -98,35 +98,43 @@ const App: React.FC = () => {
     setMovies(prev => prev.filter(m => m.id !== id));
   };
 
-  const handleAddDate = (date: string) => {
+  const handleToggleDateVote = (dateStr: string) => {
     if (!user) return;
-    // Check if exists
-    if (dates.find(d => d.date === date)) {
-      alert("這天已經有人提議囉！");
-      return;
-    }
-    const newDate: DatePoll = {
-      id: simpleId(),
-      date,
-      votes: [user.name]
-    };
-    setDates(prev => [...prev, newDate]);
-  };
 
-  const handleVoteDate = (id: string) => {
-    if (!user) return;
-    setDates(prev => prev.map(d => {
-      if (d.id !== id) return d;
-      const hasVoted = d.votes.includes(user.name);
-      return {
-        ...d,
-        votes: hasVoted ? d.votes.filter(v => v !== user.name) : [...d.votes, user.name]
-      };
-    }));
-  };
+    setDates(prev => {
+      const existingIndex = prev.findIndex(d => d.date === dateStr);
+      
+      if (existingIndex >= 0) {
+        // Date exists, toggle vote
+        const existingPoll = prev[existingIndex];
+        const hasVoted = existingPoll.votes.includes(user.name);
+        
+        let newVotes;
+        if (hasVoted) {
+          newVotes = existingPoll.votes.filter(v => v !== user.name);
+        } else {
+          newVotes = [...existingPoll.votes, user.name];
+        }
 
-  const handleDeleteDate = (id: string) => {
-    setDates(prev => prev.filter(d => d.id !== id));
+        // If no votes left, remove the date entry to keep clean
+        if (newVotes.length === 0) {
+          return prev.filter(d => d.id !== existingPoll.id);
+        }
+
+        // Update the poll
+        const newDates = [...prev];
+        newDates[existingIndex] = { ...existingPoll, votes: newVotes };
+        return newDates;
+      } else {
+        // New date, create entry
+        const newPoll: DatePoll = {
+          id: simpleId(),
+          date: dateStr,
+          votes: [user.name]
+        };
+        return [...prev, newPoll];
+      }
+    });
   };
 
   // --- Roulette Logic ---
@@ -216,7 +224,7 @@ const App: React.FC = () => {
                 </button>
               </form>
               <p className="text-xs text-slate-500 mt-2 ml-1">
-                🤖 AI 將自動搜尋電影資訊 (片名、導演、哪裡看...)
+                🤖 AI 將自動搜尋電影資訊 (片名、海報、台灣串流...)
               </p>
             </div>
 
@@ -267,13 +275,11 @@ const App: React.FC = () => {
 
           {/* Right Column: Dates (Sticky on Desktop) */}
           <div className="lg:col-span-1">
-             <div className="sticky top-24 h-[calc(100vh-8rem)]">
+             <div className="sticky top-24 h-auto min-h-[500px]">
                <DateColumn
                  dates={dates}
                  currentUser={user}
-                 onAddDate={handleAddDate}
-                 onVoteDate={handleVoteDate}
-                 onDeleteDate={handleDeleteDate}
+                 onToggleDate={handleToggleDateVote}
                />
              </div>
           </div>

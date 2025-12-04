@@ -6,6 +6,7 @@ export interface Movie {
   description: string;
   director: string;
   platform: string;
+  posterUrl?: string; // Optional URL for the movie poster
   emoji: string;
   addedBy: string;
   votes: string[]; // Array of user nicknames
