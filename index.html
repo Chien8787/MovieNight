@@ -4,6 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>阿謙家の電影之夜 | Movie Night</title>
+    
+    <!-- Polyfills and Console Fixes -->
+    <script>
+      // 1. Polyfill for process.env (Required for React ecosystem in no-build env)
+      if (typeof process === 'undefined') {
+        window.process = { env: {} };
+      }
+
+      // 2. Suppress "Tailwind CSS should not be used in production" warning.
+      // Since we are intentionally using the CDN architecture for a serverless/no-build setup, this warning is expected but distracting.
+      const originalWarn = console.warn;
+      console.warn = (...args) => {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+        originalWarn.apply(console, args);
+      };
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script>
@@ -66,11 +83,6 @@
 </head>
   <body>
     <div id="root"></div>
-    <script>
-      // Polyfill for process.env to avoid crashes if not defined by build tool
-      if (typeof process === 'undefined') {
-        window.process = { env: {} };
-      }
-    </script>
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
