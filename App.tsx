@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import Header from './components/Header';
 import MovieCard from './components/MovieCard';
 import DateColumn from './components/DateColumn';
 import RouletteModal from './components/RouletteModal';
 import { fetchMovieMetadata } from './services/geminiService';
 import { Movie, DatePoll, User } from './types';
-import { v4 as uuidv4 } from 'uuid'; // Usually requires a package, but for no-build we'll make a simple helper or assume standard
-// Simple UUID helper since we might not have uuid lib in pure browser import context easily without maps
-const simpleId = () => Math.random().toString(36).substr(2, 9);
+import { v4 as uuidv4 } from 'uuid';
 
 const App: React.FC = () => {
   // --- State ---
@@ -39,6 +36,7 @@ const App: React.FC = () => {
   // --- Effects ---
   useEffect(() => {
     if (user) localStorage.setItem('movie_user', JSON.stringify(user));
+    else localStorage.removeItem('movie_user');
   }, [user]);
 
   useEffect(() => {
@@ -60,10 +58,9 @@ const App: React.FC = () => {
     if (!movieInput.trim()) return;
 
     setIsLoading(true);
-    const tempId = simpleId();
+    const tempId = uuidv4();
     
     try {
-      // Optimistic Update (Optional) or just wait
       const metadata = await fetchMovieMetadata(movieInput, user.name);
       const newMovie: Movie = {
         id: tempId,
@@ -76,11 +73,7 @@ const App: React.FC = () => {
       setMovieInput('');
     } catch (err: any) {
       console.error(err);
-      if (err.message && err.message.includes("API Key")) {
-        alert("搜尋失敗：未設定 API Key。\n請確認 Netlify 環境變數設定。");
-      } else {
-        alert("AI 罷工了，請稍後再試！");
-      }
+      alert("AI 搜尋失敗：" + err.message);
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +125,7 @@ const App: React.FC = () => {
       } else {
         // New date, create entry
         const newPoll: DatePoll = {
-          id: simpleId(),
+          id: uuidv4(),
           date: dateStr,
           votes: [user.name]
         };
@@ -201,7 +194,7 @@ const App: React.FC = () => {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Input Area */}
-            <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+            <div className={`bg-white/5 rounded-2xl p-6 border border-white/10 transition-opacity ${!user ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <span>🎬</span>
                 <span>想看什麼電影？</span>
@@ -211,13 +204,13 @@ const App: React.FC = () => {
                   type="text"
                   value={movieInput}
                   onChange={(e) => setMovieInput(e.target.value)}
-                  placeholder="輸入電影名稱..."
+                  placeholder={user ? "輸入電影名稱..." : "請先登入"}
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-4 pr-32 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-slate-500"
-                  disabled={isLoading}
+                  disabled={isLoading || !user}
                 />
                 <button
                   type="submit"
-                  disabled={isLoading || !movieInput.trim()}
+                  disabled={isLoading || !movieInput.trim() || !user}
                   className="absolute right-2 top-2 bottom-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold rounded-lg px-6 transition-all flex items-center"
                 >
                   {isLoading ? (
@@ -231,6 +224,7 @@ const App: React.FC = () => {
                 🤖 AI 將自動搜尋電影資訊 (片名、海報、台灣串流...)
               </p>
             </div>
+            {!user && <div className="text-center text-sm text-indigo-300 font-bold -mt-4 mb-4 animate-pulse">⬆️ 請先在上方輸入暱稱加入！</div>}
 
             {/* Controls */}
             {movies.length > 0 && (

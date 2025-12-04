@@ -4,35 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>阿謙家の電影之夜 | Movie Night</title>
+    <!-- Fix 404 Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍿</text></svg>">
     
-    <!-- Polyfills and Console Fixes -->
+    <!-- Tailwind CSS (CDN is fine for simplicity, suppressing warning) -->
     <script>
-      // 1. Polyfill for process.env (Required for React ecosystem in no-build env)
-      // We set a placeholder '__API_KEY__' which will be replaced by the real key during Netlify deployment
-      // via the command in netlify.toml.
-      if (typeof process === 'undefined') {
-        window.process = { 
-          env: {
-            API_KEY: '__API_KEY__' 
-          } 
-        };
-      } else if (!window.process.env) {
-        window.process.env = {
-          API_KEY: '__API_KEY__'
-        };
-      }
-
-      // Fallback: If replacement didn't happen (local dev), check if user injected it manually
-      // or if it's strictly local, we might rely on a manual string here for testing.
-      
-      // 2. Suppress "Tailwind CSS should not be used in production" warning.
       const originalWarn = console.warn;
       console.warn = (...args) => {
         if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
         originalWarn.apply(console, args);
       };
     </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script>
@@ -46,7 +28,7 @@
               theater: {
                 900: '#0f172a',
                 800: '#1e293b',
-                accent: '#6366f1', // Indigo 500
+                accent: '#6366f1',
                 glass: 'rgba(255, 255, 255, 0.05)',
                 glassBorder: 'rgba(255, 255, 255, 0.1)',
               }
@@ -61,40 +43,32 @@
     </script>
     <style>
       body {
-        background-color: #020617; /* Slate 950 */
+        background-color: #020617;
         color: #f8fafc;
         background-image: radial-gradient(circle at 50% 0%, #312e81 0%, #020617 70%);
         min-height: 100vh;
       }
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #0f172a; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #475569; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #64748b; 
-      }
+      ::-webkit-scrollbar { width: 8px; }
+      ::-webkit-scrollbar-track { background: #0f172a; }
+      ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
+    "uuid": "https://aistudiocdn.com/uuid@^13.0.0",
     "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "react": "https://aistudiocdn.com/react@^19.2.1",
-    "uuid": "https://aistudiocdn.com/uuid@^13.0.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/"
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "vite": "https://aistudiocdn.com/vite@^7.2.6"
   }
 }
 </script>
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    <!-- Vite Entry Point -->
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>
