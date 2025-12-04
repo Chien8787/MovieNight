@@ -74,9 +74,13 @@ const App: React.FC = () => {
       
       setMovies(prev => [newMovie, ...prev]);
       setMovieInput('');
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("AI 罷工了，請稍後再試！");
+      if (err.message && err.message.includes("API Key")) {
+        alert("搜尋失敗：未設定 API Key。\n請確認 Netlify 環境變數設定。");
+      } else {
+        alert("AI 罷工了，請稍後再試！");
+      }
     } finally {
       setIsLoading(false);
     }

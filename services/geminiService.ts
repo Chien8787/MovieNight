@@ -1,8 +1,18 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { Movie } from "../types";
 
-// Initialize Gemini Client
-const apiKey = process.env.API_KEY || ''; 
+// Helper to safely get key from process.env or window override
+const getApiKey = () => {
+  const envKey = process.env.API_KEY;
+  // If the key is still the placeholder (meaning replacement failed or didn't run), return empty
+  if (envKey === '__API_KEY__') {
+    // Check if user defined a global variable via snippet injection as fallback
+    return (window as any).GEMINI_API_KEY || '';
+  }
+  return envKey || '';
+};
+
+const apiKey = getApiKey();
 const ai = new GoogleGenAI({ apiKey });
 
 export const fetchMovieMetadata = async (
@@ -10,8 +20,9 @@ export const fetchMovieMetadata = async (
   userNickname: string
 ): Promise<Omit<Movie, 'id' | 'createdAt'>> => {
   
-  if (!apiKey) {
-    throw new Error("API Key is missing. Please check your environment configuration.");
+  if (!apiKey || apiKey === '__API_KEY__') {
+    console.error("Critical: API Key is missing.");
+    throw new Error("系統未設定 API Key。請確認 Netlify 的 Environment Variables 設定，或檢查 netlify.toml 是否生效。");
   }
 
   const schema: Schema = {

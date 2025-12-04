@@ -8,12 +8,24 @@
     <!-- Polyfills and Console Fixes -->
     <script>
       // 1. Polyfill for process.env (Required for React ecosystem in no-build env)
+      // We set a placeholder '__API_KEY__' which will be replaced by the real key during Netlify deployment
+      // via the command in netlify.toml.
       if (typeof process === 'undefined') {
-        window.process = { env: {} };
+        window.process = { 
+          env: {
+            API_KEY: '__API_KEY__' 
+          } 
+        };
+      } else if (!window.process.env) {
+        window.process.env = {
+          API_KEY: '__API_KEY__'
+        };
       }
 
+      // Fallback: If replacement didn't happen (local dev), check if user injected it manually
+      // or if it's strictly local, we might rely on a manual string here for testing.
+      
       // 2. Suppress "Tailwind CSS should not be used in production" warning.
-      // Since we are intentionally using the CDN architecture for a serverless/no-build setup, this warning is expected but distracting.
       const originalWarn = console.warn;
       console.warn = (...args) => {
         if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
